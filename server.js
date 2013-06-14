@@ -5,13 +5,13 @@ var SonosDiscovery = require('sonos-discovery');
 var discovery = new SonosDiscovery();
 var port = 8080;
 
-var fileServer = new static.Server('./static');
+var fileServer = new(static.Server)('./static');
 
 var server = http.createServer(function (req, res) {
 	
 	req.addListener('end', function () {
         fileServer.serve(req, res);
-    });	
+    }).resume();
 });
 
 var socketServer = io.listen(server);
@@ -22,11 +22,20 @@ socketServer.sockets.on('connection', function (socket) {
 	    // find player based on uuid
 	    var player = discovery.getPlayerByUUID(data.uuid);
 
-	    if (!player) return;
+	    if (!player) {
+            console.error("Error: no player for UUID " + data.uuid);
+            return;
+        }
 
 	    // invoke action
-	    console.log(data)
-	    player[data.state]();
+	    console.log(data);
+        console.log(player);
+        if (player[data.state]){
+            player[data.state]( data.value);
+        }else{
+            console.error("Error: " + data.state + " is not a function of player");
+        }
+
   	});
 });
 
@@ -35,6 +44,8 @@ discovery.on('topology-change', function (data) {
 });
 
 // Attach handler for socket.io
+
+
 
 server.listen(port);
 

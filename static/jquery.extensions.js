@@ -1,6 +1,6 @@
 jQuery.fn.extend({
 	
-	volumeSlider: function (discovery) {
+	volumeSlider: function (Sonos) {
 		var state = {
 			originalX: 0,
 			maxX: 0,
@@ -21,8 +21,7 @@ jQuery.fn.extend({
 			// calculate percentage
 			var volume = Math.floor(nextX / state.maxX * 100);
 			if (volume != state.volume) {
-				// change, trigger
-				console.log(volume)				
+                $(Sonos).trigger("volume.changed",volume);
 			}
 			state.volume = volume;
 
