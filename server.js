@@ -18,7 +18,10 @@ var socketServer = io.listen(server);
 
 socketServer.sockets.on('connection', function (socket) {
 	socket.emit('topology-change', discovery.getZones());
+
   	socket.on('transport-state', function (data) {
+
+        console.log("socket on transport-state");
 	    // find player based on uuid
 	    var player = discovery.getPlayerByUUID(data.uuid);
 
@@ -28,8 +31,8 @@ socketServer.sockets.on('connection', function (socket) {
         }
 
 	    // invoke action
-	    console.log(data);
-        console.log(player);
+	    console.log("state " + data.state);
+
         if (player[data.state]){
             player[data.state]( data.value);
         }else{
@@ -43,9 +46,25 @@ discovery.on('topology-change', function (data) {
 	socketServer.sockets.emit('topology-change', data);
 });
 
+discovery.on('notify', function (data) {
+    // get raw data ow all notifications
+});
+
+discovery.on('transport-state', function (data) {
+    console.log("discovery on transport-state");
+    console.log(JSON.stringify(data, null, 4));
+    //socketServer.sockets.emit('transport-change', data);
+});
+
+discovery.on('volume', function (data) {
+    console.log("discovery on volume");
+    console.log(JSON.stringify(data, null, 4));
+    //socketServer.sockets.emit('volume', data);
+});
+
+
+
 // Attach handler for socket.io
-
-
 
 server.listen(port);
 
