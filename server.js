@@ -53,13 +53,13 @@ discovery.on('notify', function (data) {
 discovery.on('transport-state', function (data) {
     console.log("discovery on transport-state");
     console.log(JSON.stringify(data, null, 4));
-    //socketServer.sockets.emit('transport-change', data);
+    socketServer.sockets.emit('transport-change', data);
 });
 
 discovery.on('volume', function (data) {
     console.log("discovery on volume");
     console.log(JSON.stringify(data, null, 4));
-    //socketServer.sockets.emit('volume', data);
+    socketServer.sockets.emit('volume', data);
 });
 
 

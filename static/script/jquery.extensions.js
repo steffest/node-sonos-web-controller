@@ -5,9 +5,16 @@ jQuery.fn.extend({
 			originalX: 0,
 			maxX: 0,
 			currentX: 0,
-			slider: null,
+			slider: this.find('img').get(0),
 			volume: 0
 		};
+
+        init();
+
+        function init(){
+            var sliderWidth = state.slider.parentNode.clientWidth;
+            state.maxX = sliderWidth - 21;
+        }
 
 		function onDrag(e) {
 			var deltaX = e.clientX - state.originalX;
@@ -24,14 +31,11 @@ jQuery.fn.extend({
                 $(Sonos).trigger("volume.changed",volume);
 			}
 			state.volume = volume;
-
 		}
 
 		$('img', this).on('mousedown', function (e) {
-			state.slider = this;
+			//state.slider = this;
 			state.originalX = e.clientX;
-			var sliderWidth = this.parentNode.clientWidth;
-			state.maxX = sliderWidth - 21;
 			state.currentX = this.offsetLeft;
 			$(document).on('mousemove', onDrag);
 			e.preventDefault();
@@ -40,6 +44,11 @@ jQuery.fn.extend({
 		$(document).on('mouseup', function () {
 			$(document).off('mousemove', onDrag);
 		});
+
+        $(document).on('UI.volume.changed',function(event,data){
+            var x = Math.floor((data * state.maxX) / 100);
+            state.slider.style.marginLeft = x + 'px';
+        });
 	},
 
 	reRenderZones: function (zones) {

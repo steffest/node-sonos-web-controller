@@ -1,89 +1,104 @@
-var Sonos = (function(){
-
-    var volume = 100;
-    var muted = false;
-
-    function setVolume(value) {
-        if (isNaN(value)) { return }
-        volume = Math.max(0, Math.min( value, 100 ));
-        muted = false;
-        socket.emit('transport-state', { uuid: currentState.selectedZone, state: "setVolume", value: volume });
-    }
-
-    function toggleMute(value) {
-        if (typeof value == "undefined") { value = ! muted; }
-        muted = value;
-        $(Sonos).trigger("volume.changed");
-    }
-
-    function play(){
-        socket.emit('transport-state', { uuid: currentState.selectedZone, state: "play" });
-    }
-
-    function stop(){
-        socket.emit('transport-state', { uuid: currentState.selectedZone, state: "pause" });
-    }
-
-    function getVolume(){
-        return volume;
-    }
-
-    function isMuted() {
-        return muted;
-    }
-
-    return {
-        getVolume : getVolume,
-        setVolume : setVolume,
-        toggleMute : toggleMute,
-        isMuted : isMuted,
-        play : play,
-        stop : stop
-    };
-}());
-
-$(Sonos).on("volume.changed",function(e,volume){
-    console.log("volume.changed",volume);
-    Sonos.setVolume(volume);
-});
-
-$('#play-pause').on('click', function () {
-
-    var action;
-    // Find state of current player
-    if (/play/.test(this.src)) {
-        // Is play state, switch to pause
-        this.src = this.src.replace('play', 'pause');
-        action = 'pause';
-    } else {
-        // Is play state, switch to pause
-        this.src = this.src.replace('pause', 'play');
-        action = 'play';
-    }
-
-    socket.emit('transport-state', { uuid: currentState.selectedZone, state: action });
-});
-
 var currentState = {
     selectedZone: null,
-    masterVolume: 0,
-    setMasterVolume: function (volume) {
+    masterVolume: 0
+};
 
+var PLAYERSTATE = {
+    PLAYING:        {code: "PLAYING", css:"playing"},
+    TRANSITIONING:  {code: "TRANSITIONING" , css:"transitioning"},
+    STOPPED:        {code: "STOPPED", css: "stopped"},
+    PAUSED:         {code: "PAUSED", css: "paused"}
+};
+
+var getEnumByCode = function(obj, code) {
+    var result = undefined;
+    $.each(obj, function(i, e) {
+        if (e.code == code) {
+            result = e;
+            return false;
+        }
+    });
+    return result;
+};
+
+
+$(document).on('UI.player.state.changed',function(event,_playerState){
+    console.log("setting playerstate to " + _playerState);
+
+    var playPause = $('#play-pause').get(0);
+    var playerState = getEnumByCode(PLAYERSTATE,_playerState);
+    if (playerState){
+        playPause.className = playerState.css;
     }
+});
+
+var setUIState = function(uuid,state){
+    // sets the state of the Player control UI when a change is triggered
+    if (state){
+        if (state.volume) $(document).trigger('UI.volume.changed',state.volume);
+        if (state.currentTrack) setCurrentTrack(state.currentTrack);
+        if (state.currentState) $(document).trigger('UI.player.state.changed',state.currentState);
+    }
+};
+
+var setCurrentTrack = function(currentTrack){
+    var trackHTML = "";
+
+    trackHTML += buildTrackItem(currentTrack.artist, "Artist");
+    trackHTML += buildTrackItem(currentTrack.title, "Title");
+    trackHTML += buildTrackItem(currentTrack.album, "Album");
+    trackHTML += buildTrackItem(currentTrack.duration, "Duration");
+
+    $("#now-playing-container").html(trackHTML);
+};
+
+var buildTrackItem = function(trackElement,label){
+    var result = "";
+    if (trackElement && trackElement != ""){
+        result = "<div><span>" + label + ":</span>" + trackElement + "</div>";
+    }
+    return result;
 };
 
 socket.on('topology-change', function (data) {
     $('#zone-container').reRenderZones(data);
 });
 
+socket.on('transport-change', function (zone) {
+    if (zone.uuid == currentState.selectedZone && zone.state){
+        console.log("socket transport-change ", zone.uuid, zone.state);
+        setUIState(zone.uuid,zone.state);
+    }
+});
+
+socket.on('volume', function (zone) {
+    if (zone.uuid == currentState.selectedZone && zone.state.volume){
+        console.log("socket volume ", zone.uuid, zone.state);
+        $(document).trigger('UI.volume.changed',zone.state.volume);
+    }
+});
+
+$('#play-pause').on('click', function () {
+    var action;
+
+    if (this.className == "playing") {
+        this.className = PLAYERSTATE.PAUSED.css;
+        action = 'pause';
+    } else {
+        this.className = PLAYERSTATE.PLAYING.css;
+        action = 'play';
+    }
+
+    socket.emit('transport-state', { uuid: currentState.selectedZone, state: action });
+});
+
+
 $('#zone-container').on('click', 'ul', function () {
     currentState.selectedZone = this.uuid;
     var zone = $(this);
-    console.log(zone)
     zone.addClass('selected');
     zone.siblings().removeClass('selected');
-
-
-    console.log(this.uuid);
+    console.log("active zone",this.uuid);
 });
+
 $('#master-volume').volumeSlider(Sonos);

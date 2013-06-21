@@ -8,8 +8,6 @@ function upgrade(){
     showInfo("Speech recognision not available");
 }
 
-
-
 var two_line = /\n\n/g;
 var one_line = /\n/g;
 function linebreak(s) {
@@ -25,9 +23,6 @@ function capitalize(s) {
 if (!('webkitSpeechRecognition' in window)) {
     $("#speechbox").html("Speech recognision not available")
 } else {
-
-
-
     var final_transcript = '';
     var recognizing = false;
     var ignore_onend;
@@ -143,6 +138,5 @@ if (!('webkitSpeechRecognition' in window)) {
             start_timestamp = new Date().getTime();
         },2000)
     }
-
 
 }
