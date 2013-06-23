@@ -78,6 +78,17 @@ socket.on('volume', function (zone) {
     }
 });
 
+socket.on('mute', function (zone) {
+    if (zone.uuid == currentState.selectedZone){
+        console.log("socket mute ", zone.uuid, zone.state);
+        zone.state.forEach(function (muteState) {
+            if (muteState.channel == "Master"){
+                $('#master-mute').toggleClass("muted",muteState.isMute);
+            }
+        });
+    }
+});
+
 $('#play-pause').on('click', function () {
     var action;
 
@@ -90,6 +101,16 @@ $('#play-pause').on('click', function () {
     }
 
     socket.emit('transport-state', { uuid: currentState.selectedZone, state: action });
+});
+
+$('#master-mute').on('click',function(){
+    $(this).toggleClass("muted");
+    var isMute = $(this).hasClass("muted") ? 1 : 0;
+    var state = {
+        Master: isMute
+    };
+
+    socket.emit('mute', { uuid: currentState.selectedZone, state: state});
 });
 
 

@@ -261,5 +261,24 @@ ul.zone span {
     background-image: url("../images/pause_normal.png");
 }
 
+#master-mute{
+    height: 34px;
+    width: 34px;;
+    background-image: url("../images/tc_vol_speakers_normal.png");
+    background-repeat: no-repeat;
+}
+
+#master-mute:hover{
+    background-image: url("../images/tc_vol_speakers_hover.png");
+}
+
+#master-mute.muted{
+    background-image: url("../images/tc_vol_speakers_muted_normal.png");
+}
+
+#master-mute.muted:hover{
+    background-image: url("../images/tc_vol_speakers_muted_hover.png");
+}
+
 
 

@@ -40,6 +40,17 @@ socketServer.sockets.on('connection', function (socket) {
         }
 
   	});
+
+    socket.on('mute', function (data) {
+        console.log("on mute");
+        console.log(JSON.stringify(data));
+
+        var player = discovery.getPlayerByUUID(data.uuid);
+
+        if (player){
+            player.groupMute(data.state.Master)
+        }
+    });
 });
 
 discovery.on('topology-change', function (data) {
@@ -62,7 +73,11 @@ discovery.on('volume', function (data) {
     socketServer.sockets.emit('volume', data);
 });
 
-
+discovery.on('mute', function (data) {
+    console.log("discovery on mute");
+    console.log(JSON.stringify(data, null, 4));
+    socketServer.sockets.emit('mute', data);
+});
 
 // Attach handler for socket.io
 
