@@ -7,7 +7,12 @@ var Sonos = (function(){
         if (isNaN(value)) { return }
         volume = Math.max(0, Math.min( value, 100 ));
         muted = false;
-        socket.emit('transport-state', { uuid: currentState.selectedZone, state: "setVolume", value: volume });
+        socket.emit('transport-state', {
+            uuid: currentState.selectedZone,
+            state: "setVolume",
+            value: volume ,
+            forGroup: true
+        });
     }
 
     function toggleMute(value) {

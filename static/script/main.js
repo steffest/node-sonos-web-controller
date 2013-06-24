@@ -107,7 +107,8 @@ $('#master-mute').on('click',function(){
     $(this).toggleClass("muted");
     var isMute = $(this).hasClass("muted") ? 1 : 0;
     var state = {
-        Master: isMute
+        Master: isMute,
+        forGroup: true
     };
 
     socket.emit('mute', { uuid: currentState.selectedZone, state: state});

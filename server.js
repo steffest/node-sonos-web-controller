@@ -34,7 +34,7 @@ socketServer.sockets.on('connection', function (socket) {
 	    console.log("state " + data.state);
 
         if (player[data.state]){
-            player[data.state]( data.value);
+            player[data.state](data.value, data.forGroup);
         }else{
             console.error("Error: " + data.state + " is not a function of player");
         }
@@ -48,7 +48,7 @@ socketServer.sockets.on('connection', function (socket) {
         var player = discovery.getPlayerByUUID(data.uuid);
 
         if (player){
-            player.groupMute(data.state.Master)
+            player.mute(data.state.Master,data.state.forGroup);
         }
     });
 });
